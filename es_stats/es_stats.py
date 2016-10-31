@@ -5,6 +5,7 @@ from .exceptions import *
 from .utils import *
 import re
 import logging
+import socket
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,19 @@ class NodeStats():
         for node in self.rawstats["nodes"]:
             if self.rawstats["nodes"][node]["name"] == self.nodename:
                 self.nodeid = node
+        if self.nodename == '_local':
+            my_hostname = socket.gethostname()
+            my_ip = socket.gethostbyname(my_hostname)
+            if my_ip != '127.0.0.1':
+                # great, we can use our IP to look up which host we are
+                for node in self.rawstats["nodes"]:
+                    if self.rawstats["nodes"][node]["host"] == my_ip:
+                        self.nodeid = node
+            else:
+                # fall back to looking up the names of all the hosts instead
+                for node in self.rawstats["nodes"]:
+                    if socket.gethostbyaddr(self.rawstats["nodes"][node]["host"])[0] == my_hostname:
+                        self.nodeid = node
         if not self.nodeid:
             raise NotFound('Node with name {0} not found.'.format(self.nodename))
         self.stats = DotMap(self.rawstats["nodes"][self.nodeid])
@@ -79,6 +93,19 @@ class NodeInfo():
         for node in self.rawinfo["nodes"]:
             if self.rawinfo["nodes"][node]["name"] == self.nodename:
                 self.nodeid = node
+        if self.nodename == '_local':
+            my_hostname = socket.gethostname()
+            my_ip = socket.gethostbyname(my_hostname)
+            if my_ip != '127.0.0.1':
+                # great, we can use our IP to look up which host we are
+                for node in self.rawstats["nodes"]:
+                    if self.rawstats["nodes"][node]["host"] == my_ip:
+                        self.nodeid = node
+            else:
+                # fall back to looking up the names of all the hosts instead
+                for node in self.rawstats["nodes"]:
+                    if socket.gethostbyaddr(self.rawstats["nodes"][node]["host"])[0] == my_hostname:
+                        self.nodeid = node
         if not self.nodeid:
             raise NotFound('Node with name {0} not found.'.format(self.nodename))
         self.info = DotMap(self.rawinfo["nodes"][self.nodeid])
