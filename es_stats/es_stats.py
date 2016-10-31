@@ -5,6 +5,7 @@ from .exceptions import *
 from .utils import *
 import re
 import logging
+import socket
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,10 @@ class NodeStats():
         for node in self.rawstats["nodes"]:
             if self.rawstats["nodes"][node]["name"] == self.nodename:
                 self.nodeid = node
+        if self.nodename == '_local':
+            my_ip = socket.gethostbyname(socket.gethostname())
+            for node in self.rawstats["nodes"]:
+                if self.rawstats["nodes"][node]["host"] == my_ip:
         if not self.nodeid:
             raise NotFound('Node with name {0} not found.'.format(self.nodename))
         self.stats = DotMap(self.rawstats["nodes"][self.nodeid])
@@ -79,6 +84,10 @@ class NodeInfo():
         for node in self.rawinfo["nodes"]:
             if self.rawinfo["nodes"][node]["name"] == self.nodename:
                 self.nodeid = node
+        if self.nodename == '_local':
+            my_ip = socket.gethostbyname(socket.gethostname())
+            for node in self.rawstats["nodes"]:
+                if self.rawstats["nodes"][node]["host"] == my_ip:
         if not self.nodeid:
             raise NotFound('Node with name {0} not found.'.format(self.nodename))
         self.info = DotMap(self.rawinfo["nodes"][self.nodeid])
